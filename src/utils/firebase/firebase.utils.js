@@ -1,6 +1,14 @@
 import { initializeApp } from "firebase/app";
-import {getAuth,signInWithPopup,signInWithRedirect,GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth'
-import {getFirestore,doc,getDoc,setDoc} from 'firebase/firestore'
+import {
+  getAuth,
+  signInWithPopup,
+  signInWithRedirect,
+  GoogleAuthProvider,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAJfE6jE2Gab5ovXbbFqUUZGzk99G3_jwI",
@@ -19,47 +27,50 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const provider  = new GoogleAuthProvider();
+const provider = new GoogleAuthProvider();
 
 provider.getCustomParameters({
-    prompt:"select_account"
-})
+  prompt: "select_account",
+});
 
 export const auth = getAuth();
-export const signInWithGooglePopup = () => signInWithPopup(auth,provider);
+export const signInWithGooglePopup = () => signInWithPopup(auth, provider);
 export const db = getFirestore();
-export const createUserDocumentFromAuth = async (userAuth,additionalInformation={}) => {
-  
-  if(!userAuth) return;
+export const createUserDocumentFromAuth = async (
+  userAuth,
+  additionalInformation = {}
+) => {
+  if (!userAuth) return;
 
-  const useDocRef = doc(db,'users',userAuth.uid)
+  const useDocRef = doc(db, "users", userAuth.uid);
 
   const userSnapshot = await getDoc(useDocRef);
-  
-  if(!userSnapshot.exists()){
-  
-    const {displayName ,email} = userAuth
+
+  if (!userSnapshot.exists()) {
+    const { displayName, email } = userAuth;
     const createdAt = new Date();
-  
+
     try {
-      await setDoc(useDocRef,{
+      await setDoc(useDocRef, {
         displayName,
         email,
         createdAt,
-        ...additionalInformation
-      })
-    }catch(error){
-      console.log("Error occured during creating user",error.message)
+        ...additionalInformation,
+      });
+    } catch (error) {
+      console.log("Error occured during creating user", error.message);
     }
   }
   return useDocRef;
-}
+};
 
-export const createUserAuthWithEmailandPassword = async (email,password) => {
-  if(!email || !password) return;
-  return await createUserWithEmailAndPassword(auth,email,password) 
-}
-export const signUserAuthWithEmailandPassword = async (email,password) => {
-  if(!email || !password) return;
-  return await signInWithEmailAndPassword(auth,email,password)
-}
+export const createUserAuthWithEmailandPassword = async (email, password) => {
+  if (!email || !password) return;
+  return await createUserWithEmailAndPassword(auth, email, password);
+};
+export const signUserAuthWithEmailandPassword = async (email, password) => {
+  if (!email || !password) return;
+  return await signInWithEmailAndPassword(auth, email, password);
+};
+
+export const SignOutUser = async () => await signOut(auth);
